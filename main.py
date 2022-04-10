@@ -278,10 +278,6 @@ def get_original_date(exif):
         if key == 36867:
             return val
 
-if __name__=="__main__":
-    main()
-
-
 class mediaItem:
     
     def __init__(self):
@@ -358,3 +354,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     # Print New Line on Complete
     if iteration == total: 
         print()
+
+
+if __name__=="__main__":
+    main()
