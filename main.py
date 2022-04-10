@@ -199,12 +199,6 @@ def get_geotagging(exif):
 def get_decimal_from_dms(dms, ref):
     #print(f"dms:{dms} ref: {ref}")
 
-    #dms:(27.0, 54.0, 55.86) ref: N
-    #print("bla")
-    #print(dms[0])
-    #print(dms[1])
-    #print(dms[2])
-
     degrees = float(dms[0])#dms[0][0] / dms[0][1]
     minutes = float(dms[1]) / 60.0 #dms[1][0] / dms[1][1] / 60.0
     seconds = float(dms[2]) / 3600.0#dms[2][0] / dms[2][1] / 3600.0
