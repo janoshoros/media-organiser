@@ -20,7 +20,6 @@ def main():
     bkp_dir = os.path.join(dst, "duplicates")
     repository = mediaItemRepository()
     filter = [".jpg", ".png", ".gif", ".webp", ".tiff", ".psd", ".raw", ".bmp", ".heif", ".indd", ".jpeg", ".svg", ".ai", ".eps", ".webm", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".ogg", ".mp4", ".m4p", ".m4v", ".avi", ".wmv", ".mov", ".qt", ".flv", ".swf", ".avchd", ".avi", ".heic", ".m4a", ".3gp"]
-    #[".jpg",".jpeg", ".png", ".mov", ".avi", ".mp4", ".heic", ".m4a"]
     if len(sys.argv)>3 and sys.argv[3] !=None:
         filter = sys.argv[3]
 
