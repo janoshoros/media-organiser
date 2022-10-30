@@ -1,3 +1,6 @@
+from ast import Global
+from pickle import GLOBAL
+import string
 import sys
 import os
 import time
@@ -13,12 +16,30 @@ from datetime import datetime
 import requests
 import json
 
+class Geolocation:
+    def __init__(self, coord, location):
+        self.coordinates = coord
+        self.location = location
+
+    def get_location(self):
+        return self.location
+
+    def get_coordinates(self):
+        return self.coordinates
+
+    def __str__(self):
+        return f'Geolocation({str(self.coordinates) + " (" + str(self.location) + ")"})'
+
+    #def __repr__(self):
+    #    return f"Geolocation(coordinates='{str(self.coordinates)}', location={str(self.location)})"
+
 
 def main():
     errs = []
     dst = sys.argv[2]
     bkp_dir = os.path.join(dst, "duplicates")
     repository = mediaItemRepository()
+    geo_cache=[]
     filter = [".jpg", ".png", ".gif", ".webp", ".tiff", ".psd", ".raw", ".bmp", ".heif", ".indd", ".jpeg", ".svg", ".ai", ".eps", ".webm", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".ogg", ".mp4", ".m4p", ".m4v", ".avi", ".wmv", ".mov", ".qt", ".flv", ".swf", ".avchd", ".avi", ".heic", ".m4a", ".3gp"]
     if len(sys.argv)>3 and sys.argv[3] !=None:
         filter = sys.argv[3]
@@ -59,7 +80,7 @@ def main():
             try:
                 geotags = get_geotagging(exif)
                 mi.coordinates = get_coordinates(geotags)
-                mi.location = get_location(geotags)
+                mi.location = get_location(geo_cache, geotags)
             except BaseException as err:
                 errs.append(err)
 
@@ -217,33 +238,50 @@ def get_coordinates(geotags):
 
     return (lat,lon)
 
+def get_geo_from_cache(geo_cache, coords):
+    retValue = ""
+    #print("Geo cache: "+ str(len(geo_cache)))
+    for g in geo_cache:
+        #print("Checking location: " + str(g))
+        #print("Comparing: " + str(g.get_coordinates()) + " with " + str(coords))
+        if g.get_coordinates() == coords:
+            #print("Found matching item: " + str(g))
+            retValue = g.get_location()
+            #print("Returning: " + str(retValue))
+            return retValue
+    if retValue == "":
+        #print(f"calling bigdatacloud api with values:{coords}")
+        uri = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={coords[0]}&longitude={coords[1]}&localityLanguage=en"
+        #print(uri)
 
+        response = requests.get(uri)
+        #print(response)
+        try:
+            response.raise_for_status()
+            #print(response.json)
 
-def get_location(geotags):
-    coords = get_coordinates(geotags)
-
-    #print(f"calling bigdatacloud api with values:{coords}")
-    uri = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={coords[0]}&longitude={coords[1]}&localityLanguage=en"
-    #print(uri)
-
-    response = requests.get(uri)
-    #print(response)
-    try:
-        response.raise_for_status()
-        #print(response.json)
-
-        geo_info = json.loads(response.text)
-        ret_value = []
-        
-        for adm_info_element in geo_info["localityInfo"]["administrative"]:
-            ret_value.append(adm_info_element["name"])
+            geo_info = json.loads(response.text)
+            ret_value = []
             
-        #print(ret_value)
-        return ret_value
+            for adm_info_element in geo_info["localityInfo"]["administrative"]:
+                ret_value.append(adm_info_element["name"])
+            
+            #print("Coords: " + str(coords))    
+            #print("Location: "+ str(ret_value))
+            x = Geolocation(coords, ret_value)
+            geo_cache.append(x)
+            return ret_value
 
-    except requests.exceptions.HTTPError as e:
-        print(str(e))
-        return {}
+        except requests.exceptions.HTTPError as e:
+            print(str(e))
+            x = Geolocation(coords, "")
+            geo_cache.append(x)
+            return {}
+
+def get_location(geo_cache, geotags):
+    coords = get_coordinates(geotags)
+    return get_geo_from_cache(geo_cache, coords)
+
 
 def md5(fname):
     hash_md5 = hashlib.md5()
