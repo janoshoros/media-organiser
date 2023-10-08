@@ -12,7 +12,7 @@ V1 Features:
     <unknown location>
 
 Usage:
-      python media-organiser.py <source directory> <destination directory>
+      python media-organiser.py [source directory] [destination directory]
 
 For reverse geocoding I used https://api.bigdatacloud.net/ and it blocks IP address if there are a lot of requests so it may sense to use vpn to change ip address from time to time.
 
